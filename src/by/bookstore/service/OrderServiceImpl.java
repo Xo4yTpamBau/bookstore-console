@@ -8,7 +8,7 @@ import by.bookstore.storage.inmemory.InMemoryOrderStorage;
 
 public class OrderServiceImpl implements OrderService {
 
-    OrderStorage orderStorage = new DBOrderStorage();
+    OrderStorage orderStorage = new FileOrderStorage();
 
     @Override
     public boolean save(Order order) {

@@ -101,12 +101,28 @@ public class DBUserStorage extends AbstractDBStorage implements UserStorage {
     @Override
     public void updateAddress(Address address, int id) {
         try {
+            connection.setAutoCommit(false);
+
+            PreparedStatement preparedStatement1 = connection.prepareStatement("insert into address values (default, ?, ?) returning id");
+            preparedStatement1.setString(1, address.getStreet());
+            preparedStatement1.setInt(2, address.getHome());
+            ResultSet resultSet = preparedStatement1.executeQuery();
+            resultSet.next();
+
             PreparedStatement preparedStatement = connection.prepareStatement("update users set address_id = ? where id = ?");
-            preparedStatement.setInt(1, address.getId());
+            preparedStatement.setInt(1, resultSet.getInt(1) );
             preparedStatement.setInt(2, id);
             preparedStatement.execute();
+
+            connection.commit();
         } catch (SQLException throwables) {
             throwables.printStackTrace();
+        }finally {
+            try {
+                connection.setAutoCommit(true);
+            } catch (SQLException throwables) {
+                throwables.printStackTrace();
+            }
         }
     }
 
@@ -152,7 +168,7 @@ public class DBUserStorage extends AbstractDBStorage implements UserStorage {
     public User[] findAll() {
         List<User> all = new ArrayList<>();
         try {
-            PreparedStatement preparedStatement = connection.prepareStatement("select * from users u join address a on a.id = u.address_id " +
+            PreparedStatement preparedStatement = connection.prepareStatement("select * from users u left join address a on a.id = u.address_id " +
                     "  join roles r on r.id = u.role_id ");
             ResultSet resultSet = preparedStatement.executeQuery();
             while (resultSet.next()) {

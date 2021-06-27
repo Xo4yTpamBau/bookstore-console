@@ -25,8 +25,9 @@ public class DBAuthorStorage extends AbstractDBStorage implements AuthorStorage 
     @Override
     public void updateDescription(String newDescription, int id) {
         try {
-            PreparedStatement preparedStatement = connection.prepareStatement("update author set description = ?");
+            PreparedStatement preparedStatement = connection.prepareStatement("update author set description = ? where id = ?");
             preparedStatement.setString(1, newDescription);
+            preparedStatement.setInt(2, id);
             preparedStatement.execute();
         } catch (SQLException throwable) {
             throwable.printStackTrace();

@@ -71,11 +71,15 @@ public class DBStoreStorage extends AbstractDBStorage implements StoreStorage {
     @Override
     public String updateTitle(String title, int id) {
         try {
+            PreparedStatement preparedStatement1 = connection.prepareStatement("select title from store where id = ?");
+            preparedStatement1.setInt(1, id);
+            ResultSet resultSet = preparedStatement1.executeQuery();
+            resultSet.next();
             PreparedStatement preparedStatement = connection.prepareStatement("update store set title = ? where id = ?");
             preparedStatement.setString(1, title);
             preparedStatement.setInt(2, id);
-            preparedStatement.executeQuery();
-            return null;
+            preparedStatement.execute();
+            return resultSet.getString(1);
         } catch (SQLException throwable) {
             throwable.printStackTrace();
         }
@@ -101,7 +105,7 @@ public class DBStoreStorage extends AbstractDBStorage implements StoreStorage {
     public Store[] getAll() {
         List<Store> all = new ArrayList<>();
         try {
-            PreparedStatement preparedStatement = connection.prepareStatement("select * from store s join address a on a.id = s.address_id where s.title = ?");
+            PreparedStatement preparedStatement = connection.prepareStatement("select * from store s join address a on a.id = s.address_id ");
             ResultSet resultSet = preparedStatement.executeQuery();
             while (resultSet.next()) {
                 Store store = new Store(resultSet.getInt(1),
@@ -122,6 +126,7 @@ public class DBStoreStorage extends AbstractDBStorage implements StoreStorage {
     public Store getByTitle(String title) {
         try {
             PreparedStatement preparedStatement = connection.prepareStatement("select * from store s join address a on a.id = s.address_id where s.title = ?");
+            preparedStatement.setString(1, title);
             ResultSet resultSet = preparedStatement.executeQuery();
             resultSet.next();
             return new Store(resultSet.getInt(1),
